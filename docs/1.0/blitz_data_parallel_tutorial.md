@@ -1,20 +1,21 @@
-# 可选：数据并行处理
+# 可选: 数据并行处理
 
-> 译者：[bat67](https://github.com/bat67)
-> 
-> 最新版会在[译者仓库](https://github.com/bat67/Deep-Learning-with-PyTorch-A-60-Minute-Blitz-cn)首先同步。
+> **作者**: [Sung Kim](https://github.com/hunkim)  [Jenny Kang](https://github.com/jennykang)
+>
+> 译者: [bat67](https://github.com/bat67)
+>
+> 校对者: [FontTian](https://github.com/fonttian)  [片刻](https://github.com/jiangzhonglian)
 
-在这个教程里，我们将学习如何使用数据并行（`DataParallel`）来使用多GPU。
+在这个教程里，我们将学习如何使用数据并行(`DataParallel`）来使用多GPU。
 
-PyTorch非常容易的就可以使用GPU，可以用如下方式把一个模型放到GPU上：
-
+PyTorch非常容易的就可以使用GPU，可以用如下方式把一个模型放到GPU上: 
 
 ```python
-device = torch.device("cuda：0")
+device = torch.device("cuda: 0")
 model.to(device)
 ```
 
-然后可以复制所有的张量到GPU上：
+然后可以复制所有的张量到GPU上: 
 
 ```python
 mytensor = my_tensor.to(device)
@@ -47,27 +48,27 @@ batch_size = 30
 data_size = 100
 ```
 
-设备（Device）：
+设备(Device）: 
 
 ```python
-device = torch.device("cuda：0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda: 0" if torch.cuda.is_available() else "cpu")
 ```
 
 ## 虚拟数据集
 
-要制作一个虚拟（随机）数据集，只需实现`__getitem__`。
+要制作一个虚拟(随机）数据集，只需实现`__getitem__`。
 
 ```python
-class RandomDataset(Dataset)：
+class RandomDataset(Dataset):
 
-    def __init__(self, size, length)：
+    def __init__(self, size, length):
         self.len = length
         self.data = torch.randn(length, size)
 
-    def __getitem__(self, index)：
+    def __getitem__(self, index):
         return self.data[index]
 
-    def __len__(self)：
+    def __len__(self):
         return self.len
 
 rand_loader = DataLoader(dataset=RandomDataset(input_size, data_size),
@@ -76,21 +77,21 @@ rand_loader = DataLoader(dataset=RandomDataset(input_size, data_size),
 
 ## 简单模型
 
-作为演示，我们的模型只接受一个输入，执行一个线性操作，然后得到结果。然而，你能在任何模型（CNN，RNN，Capsule Net等）上使用`DataParallel`。
+作为演示，我们的模型只接受一个输入，执行一个线性操作，然后得到结果。然而，你能在任何模型(CNN，RNN，Capsule Net等）上使用`DataParallel`。
 
 我们在模型内部放置了一条打印语句来检测输入和输出向量的大小。请注意批等级为0时打印的内容。
 
 ```python
-class Model(nn.Module)：
+class Model(nn.Module):
     # Our model
 
-    def __init__(self, input_size, output_size)：
+    def __init__(self, input_size, output_size):
         super(Model, self).__init__()
         self.fc = nn.Linear(input_size, output_size)
 
-    def forward(self, input)：
+    def forward(self, input):
         output = self.fc(input)
-        print("\tIn Model： input size", input.size(),
+        print("\tIn Model: input size", input.size(),
               "output size", output.size())
 
         return output
@@ -102,7 +103,7 @@ class Model(nn.Module)：
 
 ```python
 model = Model(input_size, output_size)
-if torch.cuda.device_count() > 1：
+if torch.cuda.device_count() > 1: 
   print("Let's use", torch.cuda.device_count(), "GPUs!")
   # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
   model = nn.DataParallel(model)
@@ -110,7 +111,7 @@ if torch.cuda.device_count() > 1：
 model.to(device)
 ```
 
-输出：
+输出: 
 
 ```python
 Let's use 2 GPUs!
@@ -121,28 +122,28 @@ Let's use 2 GPUs!
 现在我们可以看输入和输出张量的大小。
 
 ```python
-for data in rand_loader：
+for data in rand_loader: 
     input = data.to(device)
     output = model(input)
-    print("Outside： input size", input.size(),
+    print("Outside: input size", input.size(),
           "output_size", output.size())
 ```
 
-输出：
+输出: 
 
 ```python
-In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-        In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-        In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-        In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-        In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-        In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-        In Model： input size torch.Size([5, 5]) output size torch.Size([5, 2])
-        In Model： input size torch.Size([5, 5]) output size torch.Size([5, 2])
-Outside： input size torch.Size([10, 5]) output_size torch.Size([10, 2])
+In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+        In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+        In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+        In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+        In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+        In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+        In Model: input size torch.Size([5, 5]) output size torch.Size([5, 2])
+        In Model: input size torch.Size([5, 5]) output size torch.Size([5, 2])
+Outside: input size torch.Size([10, 5]) output_size torch.Size([10, 2])
 ```
 
 ## 结果
@@ -151,91 +152,91 @@ Outside： input size torch.Size([10, 5]) output_size torch.Size([10, 2])
 
 ### 2个GPU
 
-若有2个GPU，将看到：
+若有2个GPU，将看到: 
 
 ```python
 Let's use 2 GPUs!
-    In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-    In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-    In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-    In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-    In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-    In Model： input size torch.Size([15, 5]) output size torch.Size([15, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-    In Model： input size torch.Size([5, 5]) output size torch.Size([5, 2])
-    In Model： input size torch.Size([5, 5]) output size torch.Size([5, 2])
-Outside： input size torch.Size([10, 5]) output_size torch.Size([10, 2])
+    In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+    In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+    In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+    In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+    In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+    In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+    In Model: input size torch.Size([5, 5]) output size torch.Size([5, 2])
+    In Model: input size torch.Size([5, 5]) output size torch.Size([5, 2])
+Outside: input size torch.Size([10, 5]) output_size torch.Size([10, 2])
 ```
 
 ### 3个GPU
 
-若有3个GPU，将看到：
+若有3个GPU，将看到: 
 
 ```python
 Let's use 3 GPUs!
-    In Model： input size torch.Size([10, 5]) output size torch.Size([10, 2])
-    In Model： input size torch.Size([10, 5]) output size torch.Size([10, 2])
-    In Model： input size torch.Size([10, 5]) output size torch.Size([10, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-    In Model： input size torch.Size([10, 5]) output size torch.Size([10, 2])
-    In Model： input size torch.Size([10, 5]) output size torch.Size([10, 2])
-    In Model： input size torch.Size([10, 5]) output size torch.Size([10, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-    In Model： input size torch.Size([10, 5]) output size torch.Size([10, 2])
-    In Model： input size torch.Size([10, 5]) output size torch.Size([10, 2])
-    In Model： input size torch.Size([10, 5]) output size torch.Size([10, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([2, 5]) output size torch.Size([2, 2])
-Outside： input size torch.Size([10, 5]) output_size torch.Size([10, 2])
+    In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
+    In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
+    In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+    In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
+    In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
+    In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+    In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
+    In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
+    In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
+Outside: input size torch.Size([10, 5]) output_size torch.Size([10, 2])
 ```
 
 ### 8个GPU
 
-若有8个GPU，将看到：
+若有8个GPU，将看到: 
 
 ```python
 Let's use 8 GPUs!
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([2, 5]) output size torch.Size([2, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([2, 5]) output size torch.Size([2, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([4, 5]) output size torch.Size([4, 2])
-    In Model： input size torch.Size([2, 5]) output size torch.Size([2, 2])
-Outside： input size torch.Size([30, 5]) output_size torch.Size([30, 2])
-    In Model： input size torch.Size([2, 5]) output size torch.Size([2, 2])
-    In Model： input size torch.Size([2, 5]) output size torch.Size([2, 2])
-    In Model： input size torch.Size([2, 5]) output size torch.Size([2, 2])
-    In Model： input size torch.Size([2, 5]) output size torch.Size([2, 2])
-    In Model： input size torch.Size([2, 5]) output size torch.Size([2, 2])
-Outside： input size torch.Size([10, 5]) output_size torch.Size([10, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
+    In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
+Outside: input size torch.Size([30, 5]) output_size torch.Size([30, 2])
+    In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
+    In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
+    In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
+    In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
+    In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
+Outside: input size torch.Size([10, 5]) output_size torch.Size([10, 2])
 ```
 
 ## 总结
 
-`DataParallel`自动的划分数据，并将作业发送到多个GPU上的多个模型。在每个模型完成作业后，`DataParallel`收集并合并结果返回给你。
+`DataParallel`自动的划分数据，并将作业发送到多个GPU上的多个模型。`DataParallel`会在每个模型完成作业后，收集与合并结果然后返回给你。
 
-更多信息，请参考：http://pytorch.org/tutorials/beginner/former_torchies/parallelism_tutorial.html
+更多信息，请参考: https://pytorch.org/tutorials/beginner/former_torchies/parallelism_tutorial.html
